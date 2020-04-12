@@ -1,4 +1,4 @@
-package com.gzk.netty.netty;
+package com.gzk.netty;
 
 import android.os.Environment;
 import android.os.Handler;

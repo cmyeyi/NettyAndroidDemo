@@ -7,17 +7,14 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gzk.netty.netty.SocketManager;
 import com.gzk.netty.netty.utils.Constant;
 import com.gzk.netty.netty.utils.IPUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {

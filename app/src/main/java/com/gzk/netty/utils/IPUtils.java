@@ -1,4 +1,4 @@
-package com.gzk.netty.netty.utils;
+package com.gzk.netty.utils;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;

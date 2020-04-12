@@ -1,4 +1,4 @@
-package com.gzk.netty;
+package com.gzk.netty.server;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzk.netty.R;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 
@@ -17,18 +18,17 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    public final static String TAG = MainActivity.class.getSimpleName();
-    public static final String IP = "192.168.31.10";
+public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
+    public final static String TAG = ServerActivity.class.getSimpleName();
     private TextView addressView;
     private TextView progressView;
-    private SocketManager socketManager;
+    private SocketManagerForServer socketManagerForServer;
     private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_server);
 
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
@@ -38,9 +38,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
+                SimpleDateFormat format;
                 switch (msg.what) {
                     case 0:
-                        SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
+                        format = new SimpleDateFormat("hh:mm:ss");
                         addressView.append("\n[" + format.format(new Date()) + "]" + msg.obj.toString());
                         break;
                     case 1:
@@ -52,10 +53,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case 3:
                         progressView.setText("进度：" + msg.obj.toString());
                         break;
+                    case 4:
+                        String remoteIP = msg.obj.toString();
+                        send(remoteIP);
+                        break;
                 }
             }
         };
-        socketManager = new SocketManager(handler);
+        socketManagerForServer = new SocketManagerForServer(handler);
     }
 
     private String getSelfIpAddress() {
@@ -66,33 +71,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_connect:
-                connect();
-                break;
             case R.id.tv_send:
-                send();
+//                send();
                 break;
             default:
                 break;
         }
     }
 
-    private void connect() {
 
-    }
-
-    private static final int FILE_CODE = 0;
-
-    private void send() {
-        if (Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+    private void send(final String remoteIp) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             final File file = new File("/sdcard/gd.zip");
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());
-                Message.obtain(handler, 0, "正在发送至" + IP + ":" + Constant.PORT).sendToTarget();
+                Message.obtain(handler, 0, "正在发送至" + remoteIp + ":" + Constant.PORT).sendToTarget();
                 Thread sendThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        socketManager.sendFile(file.getName(), file.getPath(), IP, Constant.PORT);
+                        socketManagerForServer.sendFile(file.getName(), file.getPath(), remoteIp, Constant.PORT);
                     }
                 });
                 sendThread.start();

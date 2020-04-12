@@ -1,4 +1,4 @@
-package com.gzk.netty.netty.utils;
+package com.gzk.netty.utils;
 
 public class Constant {
     public static String HOST = "192.168.31.10";

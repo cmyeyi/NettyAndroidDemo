@@ -1,13 +1,11 @@
-package com.gzk.netty;
+package com.gzk.netty.server;
 
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,10 +16,10 @@ import java.net.Socket;
 
 import static com.gzk.netty.utils.Constant.PORT;
 
-public class SocketManager {
+public class SocketManagerForServer {
     private ServerSocket server;
     private Handler handler = null;
-    public SocketManager(Handler handler){
+    public SocketManagerForServer(Handler handler){
         this.handler = handler;
         try {
             server = new ServerSocket(PORT);
@@ -30,7 +28,7 @@ public class SocketManager {
                 @Override
                 public void run() {
                     while(true){
-                        receiveFile();
+                        waitForClientRequest();
                     }
                 }
             });
@@ -46,36 +44,21 @@ public class SocketManager {
         }
     }
 
-    void receiveFile(){
+    void waitForClientRequest(){
         try{
 
             Socket name = server.accept();
             InputStream nameStream = name.getInputStream();
             InputStreamReader streamReader = new InputStreamReader(nameStream);
             BufferedReader br = new BufferedReader(streamReader);
-            String fileName = br.readLine();
+            String key = br.readLine();
+            sendMessage(0, "收到，客户端请求,key:"+key+"\n");
+            sendMessage(4, name.getInetAddress().getHostAddress());
+
             br.close();
             streamReader.close();
             nameStream.close();
             name.close();
-            sendMessage(0, "正在接收:" + fileName);
-
-            Socket data = server.accept();
-            InputStream dataStream = data.getInputStream();
-            String savePath = Environment.getExternalStorageDirectory().getPath() + "/" + fileName;
-            FileOutputStream file = new FileOutputStream(savePath, false);
-            byte[] buffer = new byte[1024];
-            int size = -1;
-            long total = 0;
-            while ((size = dataStream.read(buffer)) != -1){
-                file.write(buffer, 0 ,size);
-                total += size;
-                sendMessage(3, "total:" + total);
-            }
-            file.close();
-            dataStream.close();
-            data.close();
-            sendMessage(0, fileName + "接收完成");
         }catch(Exception e){
             sendMessage(0, "接收错误:\n" + e.getMessage());
         }

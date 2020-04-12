@@ -1,29 +1,33 @@
 package com.gzk.netty;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gzk.netty.netty.utils.IPInformation;
-import com.gzk.netty.netty.client.NettyClient;
-import com.gzk.netty.netty.NettyConnectListener;
-import com.gzk.netty.netty.client.NettyReceiveListener;
-import com.gzk.netty.netty.server.NettyServer;
+import com.gzk.netty.netty.SocketManager;
+import com.gzk.netty.netty.utils.Constant;
+import com.gzk.netty.netty.utils.IPUtils;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    String TAG = MainActivity.class.getSimpleName();
+    public final static String TAG = MainActivity.class.getSimpleName();
+    public static final String IP = "192.168.31.251";
     private EditText etContent;
-    private ListView lsRecord;
-    private RecordAdapter mAdapter;
-    private List<RecordBean> mData = new ArrayList<>();
+    private TextView addressView;
+    private TextView progressView;
+    private SocketManager socketManager;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,20 +40,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
         findViewById(R.id.tv_disconnect).setOnClickListener(this);
-        TextView address = findViewById(R.id.ip_address);
-        address.setText("ip="+getSelfIpAddress());
-
-        lsRecord = findViewById(R.id.ls_record);
-        mAdapter = new RecordAdapter(this, mData);
-        lsRecord.setAdapter(mAdapter);
-
-
+        progressView = findViewById(R.id.ip_progress);
+        addressView = findViewById(R.id.ip_address);
+        addressView.setText("ip=" + getSelfIpAddress());
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case 0:
+                        SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
+                        addressView.append("\n[" + format.format(new Date()) + "]" + msg.obj.toString());
+                        break;
+                    case 1:
+                        addressView.setText("本机IP：" + getSelfIpAddress() + " 监听端口:" + msg.obj.toString());
+                        break;
+                    case 2:
+                        Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                        break;
+                    case 3:
+                        progressView.setText("进度：" + msg.obj.toString());
+                        break;
+                }
+            }
+        };
+        socketManager = new SocketManager(handler);
     }
 
-    private String getSelfIpAddress(){
-        IPInformation iPInfo = new IPInformation(this);
-        return iPInfo.getWIFILocalIpAdress();
+    private String getSelfIpAddress() {
+        IPUtils iPInfo = new IPUtils(this);
+        return iPInfo.getWIFILocalIpAddress();
     }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -63,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 send();
                 break;
             case R.id.tv_disconnect:
-                NettyClient.getInstance().disconnect();
+
                 break;
             default:
                 break;
@@ -74,51 +95,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                NettyServer.startServer();
+
             }
         }).start();
     }
 
     private void connect() {
-        NettyClient.getInstance().connect(new NettyConnectListener() {
-            @Override
-            public void connectFail(String msg) {
-                Log.e(TAG, "connectFail..." + msg);
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-            }
 
-            @Override
-            public void connectSucc() {
-                Log.e(TAG, "connectSucc...");
-                Toast.makeText(MainActivity.this, "connectSucc", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void disconnect() {
-                Log.e(TAG, "disconnect...");
-                Toast.makeText(MainActivity.this, "disconnect", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
+
+    private static final int FILE_CODE = 0;
 
     private void send() {
-        final String str = etContent.getText().toString();
-        NettyClient.getInstance().send(str, new NettyReceiveListener<List<RecordBean>>() {
-
-            @Override
-            public void receiveFail(String msg) {
-                Toast.makeText(MainActivity.this, "receiveFail :" + msg, Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "receiveFail： " + msg);
+        if (Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+            File file = new File("/sdcard/backup2.zip");
+            if (file.exists()) {
+                Log.d("#####", "name:" + file.getName());
+            } else {
+                Log.d("#####", "file no exists:");
             }
-
-            @Override
-            public void receiveSucc(List<RecordBean> s) {
-                Log.e(TAG, "receiveSucc1： ");
-                mAdapter.addData(s);
+            if (file.exists()) {
             }
-        });
+            final ArrayList<String> fileNames = new ArrayList<>();
+            final ArrayList<String> paths = new ArrayList<>();
+            paths.add(file.getPath());
+            fileNames.add(file.getName());
+
+            Message.obtain(handler, 0, "正在发送至" + IP + ":" + Constant.PORT).sendToTarget();
+            Thread sendThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    socketManager.sendFile(fileNames, paths, IP, Constant.PORT);
+                }
+            });
+            sendThread.start();
+        }
 
     }
-
-
 }

@@ -14,12 +14,12 @@ import android.net.wifi.WifiManager;
  * @Date: 2020/4/12 00:29
  * @Copyright:
  */
-public class IPInformation {
+public class IPUtils {
 
     private  WifiManager mWifiManager;
     private WifiInfo mWifiInfo;
 
-    public IPInformation(Context mContext){
+    public IPUtils(Context mContext){
 
         //获取wifi服务
         mWifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
@@ -29,7 +29,7 @@ public class IPInformation {
         }
         mWifiInfo = mWifiManager.getConnectionInfo();
     }
-    public  String getWIFILocalIpAdress() {
+    public  String getWIFILocalIpAddress() {
         int ipAddress = mWifiInfo.getIpAddress();
         return formatIpAddress(ipAddress);
     }
@@ -40,6 +40,7 @@ public class IPInformation {
                 ((ipAdress >> 16 ) & 0xFF) + "." +
                 ( ipAdress >> 24 & 0xFF) ;
     }
+
     public  String getMacAddress() {
         return mWifiInfo.getMacAddress();
     }

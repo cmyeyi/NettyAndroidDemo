@@ -22,7 +22,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = MainActivity.class.getSimpleName();
-    public static final String IP = "192.168.31.251";
+    public static final String IP = "192.168.31.10";
     private TextView addressView;
     private TextView progressView;
     private SocketManager socketManager;
@@ -88,27 +88,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void send() {
         if (Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
-            File file = new File("/sdcard/backup2.zip");
+            final File file = new File("/sdcard/gd.zip");
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());
+                Message.obtain(handler, 0, "正在发送至" + IP + ":" + Constant.PORT).sendToTarget();
+                Thread sendThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        socketManager.sendFile(file.getName(), file.getPath(), IP, Constant.PORT);
+                    }
+                });
+                sendThread.start();
             } else {
                 Log.d("#####", "file no exists:");
             }
-            if (file.exists()) {
-            }
-            final ArrayList<String> fileNames = new ArrayList<>();
-            final ArrayList<String> paths = new ArrayList<>();
-            paths.add(file.getPath());
-            fileNames.add(file.getName());
-
-            Message.obtain(handler, 0, "正在发送至" + IP + ":" + Constant.PORT).sendToTarget();
-            Thread sendThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    socketManager.sendFile(fileNames, paths, IP, Constant.PORT);
-                }
-            });
-            sendThread.start();
         }
 
     }

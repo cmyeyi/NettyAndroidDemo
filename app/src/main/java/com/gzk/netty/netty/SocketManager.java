@@ -83,33 +83,31 @@ public class SocketManager {
         }
     }
 
-    public void sendFile(ArrayList<String> fileName, ArrayList<String> path, String ipAddress, int port){
+    public void sendFile(String fileName, String path, String ipAddress, int port){
         try {
-            for (int i = 0; i < fileName.size(); i++){
-                Socket name = new Socket(ipAddress, port);
-                OutputStream outputName = name.getOutputStream();
-                OutputStreamWriter outputWriter = new OutputStreamWriter(outputName);
-                BufferedWriter bwName = new BufferedWriter(outputWriter);
-                bwName.write(fileName.get(i));
-                bwName.close();
-                outputWriter.close();
-                outputName.close();
-                name.close();
-                sendMessage(0, "正在发送" + fileName.get(i));
+            Socket name = new Socket(ipAddress, port);
+            OutputStream outputName = name.getOutputStream();
+            OutputStreamWriter outputWriter = new OutputStreamWriter(outputName);
+            BufferedWriter bwName = new BufferedWriter(outputWriter);
+            bwName.write(fileName);
+            bwName.close();
+            outputWriter.close();
+            outputName.close();
+            name.close();
+            sendMessage(0, "正在发送" + fileName);
 
-                Socket data = new Socket(ipAddress, port);
-                OutputStream outputData = data.getOutputStream();
-                FileInputStream fileInput = new FileInputStream(path.get(i));
-                int size = -1;
-                byte[] buffer = new byte[1024];
-                while((size = fileInput.read(buffer, 0, 1024)) != -1){
-                    outputData.write(buffer, 0, size);
-                }
-                outputData.close();
-                fileInput.close();
-                data.close();
-                sendMessage(0, fileName.get(i) + "  发送完成");
+            Socket data = new Socket(ipAddress, port);
+            OutputStream outputData = data.getOutputStream();
+            FileInputStream fileInput = new FileInputStream(path);
+            int size = -1;
+            byte[] buffer = new byte[1024];
+            while((size = fileInput.read(buffer, 0, 1024)) != -1){
+                outputData.write(buffer, 0, size);
             }
+            outputData.close();
+            fileInput.close();
+            data.close();
+            sendMessage(0, fileName + "  发送完成");
             sendMessage(0, "所有文件发送完成");
         } catch (Exception e) {
             sendMessage(0, "发送错误:\n" + e.getMessage());

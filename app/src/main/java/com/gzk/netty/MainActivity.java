@@ -23,7 +23,6 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = MainActivity.class.getSimpleName();
     public static final String IP = "192.168.31.251";
-    private EditText etContent;
     private TextView addressView;
     private TextView progressView;
     private SocketManager socketManager;
@@ -34,12 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etContent = findViewById(R.id.et_content);
-
-        findViewById(R.id.tv_start_server).setOnClickListener(this);
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
-        findViewById(R.id.tv_disconnect).setOnClickListener(this);
         progressView = findViewById(R.id.ip_progress);
         addressView = findViewById(R.id.ip_address);
         addressView.setText("ip=" + getSelfIpAddress());
@@ -74,30 +69,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_start_server:
-                startServer();
-                break;
             case R.id.tv_connect:
                 connect();
                 break;
             case R.id.tv_send:
                 send();
                 break;
-            case R.id.tv_disconnect:
-
-                break;
             default:
                 break;
         }
-    }
-
-    private void startServer() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }).start();
     }
 
     private void connect() {

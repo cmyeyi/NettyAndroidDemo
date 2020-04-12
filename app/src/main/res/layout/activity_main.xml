@@ -5,31 +5,11 @@
     android:orientation="vertical">
 
 
-    <EditText
-        android:id="@+id/et_content"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_margin="5dp"
-        android:gravity="center_vertical|left"
-        android:singleLine="true"
-        android:textColor="#000" />
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_start_server"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:background="#123"
-            android:gravity="center"
-            android:text="开启服务"
-            android:textColor="#fff" />
 
         <TextView
             android:id="@+id/tv_connect"
@@ -43,17 +23,6 @@
             android:textColor="#fff" />
 
         <TextView
-            android:id="@+id/tv_disconnect"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:background="#123"
-            android:gravity="center"
-            android:text="断开连接"
-            android:textColor="#fff" />
-
-        <TextView
             android:id="@+id/tv_send"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -61,26 +30,26 @@
             android:layout_weight="1"
             android:background="#123"
             android:gravity="center"
-            android:text="发送消息"
+            android:text="发送文件"
             android:textColor="#fff" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/ip_address"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:background="@color/colorAccent"
-        android:scrollbars="vertical"
-        android:text="IP:" />
-
-    <TextView
         android:id="@+id/ip_progress"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
+        android:layout_height="60dp"
         android:background="@color/colorAccent"
-        android:scrollbars="vertical"
-        android:text="IP:" />
+        android:padding="12dp"
+        android:scrollbars="vertical"/>
+
+    <TextView
+        android:id="@+id/ip_address"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent"
+        android:padding="12dp"/>
+
+
+
 
 </LinearLayout>

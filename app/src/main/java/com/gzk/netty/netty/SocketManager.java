@@ -83,14 +83,6 @@ public class SocketManager {
         }
     }
 
-    public int getFileLength(InputStream is) throws Exception {
-        byte[] buf = new byte[1024];
-        int len = 0;
-        len = is.read(buf); // get file length
-        String length = new String(buf, 0, len);
-        return Integer.parseInt(length);
-    }
-
     public void sendFile(ArrayList<String> fileName, ArrayList<String> path, String ipAddress, int port){
         try {
             for (int i = 0; i < fileName.size(); i++){

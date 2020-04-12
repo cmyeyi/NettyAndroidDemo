@@ -172,7 +172,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
 
     public void handleQRCode(Result rawResult, Bundle bundle) {
-        Log.i("###", "result: " + rawResult.getText() + ",bundle:" + bundle.toString());
+        Log.i("###", "result: " + rawResult.getText());
         Intent intent = new Intent(CaptureActivity.this, ClientActivity.class);
         intent.putExtra("address", rawResult.getText());
         startActivity(intent);

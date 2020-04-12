@@ -59,6 +59,9 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                         String remoteIP = msg.obj.toString();
                         send(remoteIP);
                         break;
+                    case 10:
+                        finish();
+                        break;
                 }
             }
         };
@@ -84,14 +87,14 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-
+    private Thread sendThread;
     private void send(final String remoteIp) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             final File file = new File("/sdcard/gd.zip");
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());
                 Message.obtain(handler, 0, "正在发送至" + remoteIp + ":" + Constant.PORT).sendToTarget();
-                Thread sendThread = new Thread(new Runnable() {
+                sendThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         socketManagerForServer.sendFile(file.getName(), file.getPath(), remoteIp, Constant.PORT);
@@ -102,6 +105,12 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                 Log.d("#####", "file no exists:");
             }
         }
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sendThread.interrupt();
+        sendThread= null;
     }
 }

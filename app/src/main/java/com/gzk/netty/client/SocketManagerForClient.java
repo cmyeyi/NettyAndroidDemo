@@ -22,19 +22,24 @@ import static com.gzk.netty.utils.Constant.PORT;
 public class SocketManagerForClient {
     private ServerSocket server;
     private Handler handler = null;
+    private Thread receiveFileThread;
+    private boolean stop;
 
     public SocketManagerForClient(Handler handler) {
         this.handler = handler;
     }
 
     private void createServerSocket() {
+        stop = false;
         try {
-            server = new ServerSocket(PORT);
+            server = new ServerSocket();
+            server.setReuseAddress(true);
+            server.bind(new InetSocketAddress(PORT));
             sendMessage(1, PORT);
-            Thread receiveFileThread = new Thread(new Runnable() {
+            receiveFileThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (true) {
+                    while (!stop) {
                         receiveFile();
                     }
                 }
@@ -73,7 +78,9 @@ public class SocketManagerForClient {
             file.close();
             dataStream.close();
             data.close();
+            stop = true;
             sendMessage(0, fileName + "接收完成");
+            sendMessage(10, "finish");
         } catch (Exception e) {
             sendMessage(0, "接收错误:\n" + e.getMessage());
         }
@@ -82,34 +89,10 @@ public class SocketManagerForClient {
 
     public void connectServer(String ipAddress, int port) {
         String content = "requestServer";
-//        Message msg = new Message();
-//        msg.what = 1;
         try {
 
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress(ipAddress, port), 1000);
-
-//            OutputStream ou = socket.getOutputStream();
-//            BufferedReader bff = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            ou.write(content.getBytes("utf-8"));
-//            ou.flush();
-//
-//            //读取发来服务器信息
-//            String result = "";
-//            String buffer = "";
-//            while ((buffer = bff.readLine()) != null) {
-//                result = result + buffer;
-//            }
-//
-//            msg.obj = result.toString();
-//            //发送消息 修改UI线程中的组件
-//            sendMessage(0, "result:" + result.toString());
-//
-//            //关闭各种输入输出流
-//            bff.close();
-//            ou.close();
-//            socket.close();
-
 
             OutputStream os = socket.getOutputStream();
             OutputStreamWriter osw = new OutputStreamWriter(os);
@@ -133,5 +116,9 @@ public class SocketManagerForClient {
         if (handler != null) {
             Message.obtain(handler, what, obj).sendToTarget();
         }
+    }
+
+    private void clean() {
+
     }
 }

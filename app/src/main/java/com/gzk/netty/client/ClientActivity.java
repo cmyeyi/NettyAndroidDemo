@@ -52,6 +52,9 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
                     case 3:
                         addressView.setText("进度：" + msg.obj.toString());
                         break;
+                    case 10:
+                        finish();
+                        break;
                 }
             }
         };
@@ -85,8 +88,9 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         connect();
     }
 
+    private Thread serverConnect;
     private void connect() {
-        Thread serverConnect = new Thread(new Runnable() {
+        serverConnect = new Thread(new Runnable() {
             @Override
             public void run() {
                 socketManagerForClient.connectServer(remoteIP, Constant.PORT);
@@ -95,4 +99,10 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         serverConnect.start();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        serverConnect.interrupt();
+        serverConnect = null;
+    }
 }

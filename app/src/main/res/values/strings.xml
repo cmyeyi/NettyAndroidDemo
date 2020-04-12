@@ -1,3 +1,23 @@
 <resources>
-    <string name="app_name">NettyAndroidDemo</string>
+    <string name="app_name">ScanFilesTransfer</string>
+
+    ture activity-->
+    <string name="activity_capture_text_tip2">请扫描二维码进行文件传输</string>
+
+    <!-- chose file activity-->
+    <string name="activity_chose_file">请选择文件</string>
+
+    <!-- main activity-->
+    <string name="activity_main_send">发送文件</string>
+    <string name="activity_main_receive">接收文件</string>
+
+    <!-- receive from computer activity-->
+
+    <!-- scan layout-->
+    <string name="scan_tip">请扫描二维码进行文件传输</string>
+
+    <!-- rename file dialog-->
+    <string name="dialog_rename_file">请输入新的文件名</string>
+
+    <!-- -->
 </resources>

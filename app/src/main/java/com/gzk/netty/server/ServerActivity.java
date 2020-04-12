@@ -1,5 +1,6 @@
 package com.gzk.netty.server;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -7,10 +8,12 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gzk.netty.R;
+import com.gzk.netty.qrcode.utils.ZXingUtil;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 
@@ -24,14 +27,13 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     private TextView progressView;
     private SocketManagerForServer socketManagerForServer;
     private Handler handler;
-
+    private ImageView qrCodeView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
-        findViewById(R.id.tv_send).setOnClickListener(this);
-        findViewById(R.id.tv_connect).setOnClickListener(this);
+        qrCodeView = findViewById(R.id.id_qrcode_view);
         progressView = findViewById(R.id.ip_progress);
         addressView = findViewById(R.id.ip_address);
         addressView.setText("ip=" + getSelfIpAddress());
@@ -61,6 +63,12 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
             }
         };
         socketManagerForServer = new SocketManagerForServer(handler);
+        createQRCode();
+    }
+
+    private void createQRCode() {
+        Bitmap bitmap = ZXingUtil.createQRCode(getSelfIpAddress(), 150, 150);
+        qrCodeView.setImageBitmap(bitmap);
     }
 
     private String getSelfIpAddress() {
@@ -71,9 +79,6 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_send:
-//                send();
-                break;
             default:
                 break;
         }

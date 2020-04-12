@@ -1,7 +1,10 @@
 package com.gzk.netty;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -39,9 +42,27 @@ public class MainActivityNew extends AppCompatActivity implements View.OnClickLi
 
 
     private void toNew() {
-        startActivity(new Intent(this, ClientActivity.class));
+        if(checkPermission()) {
+            Intent intent = new Intent(MainActivityNew.this, CaptureActivity.class);
+            startActivity(intent);
+        }
+
     }
 
+    public boolean checkPermission() {
+        if (!hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                !hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ||
+                !hasPermission(Manifest.permission.CAMERA)) {
+            ActivityCompat.requestPermissions(MainActivityNew.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 100);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean hasPermission(String permission) {
+        return ActivityCompat.checkSelfPermission(getBaseContext(), permission) == PackageManager.PERMISSION_GRANTED;
+    }
 
 
 }

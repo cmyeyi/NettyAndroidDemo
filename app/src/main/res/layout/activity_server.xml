@@ -5,35 +5,20 @@
     android:orientation="vertical">
 
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="150dp"
+        android:background="@color/colorAccent">
 
+        <ImageView
+            android:id="@+id/id_qrcode_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:minHeight="150dp"
+            android:minWidth="150dp"/>
 
-        <TextView
-            android:id="@+id/tv_connect"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:background="#123"
-            android:gravity="center"
-            android:text="连接服务"
-            android:textColor="#fff"
-            android:visibility="gone"/>
-
-        <TextView
-            android:id="@+id/tv_send"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:background="#123"
-            android:gravity="center"
-            android:text="发送文件"
-            android:textColor="#fff" />
-    </LinearLayout>
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/ip_progress"
@@ -41,16 +26,14 @@
         android:layout_height="60dp"
         android:background="@color/colorAccent"
         android:padding="12dp"
-        android:scrollbars="vertical"/>
+        android:scrollbars="vertical" />
 
     <TextView
         android:id="@+id/ip_address"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorAccent"
-        android:padding="12dp"/>
-
-
+        android:padding="12dp" />
 
 
 </LinearLayout>

@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gzk.netty.file.ChoseFileActivity;
 import com.gzk.netty.utils.Constant;
@@ -16,10 +18,12 @@ import java.io.File;
 public class MainActivityNew extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = MainActivityNew.class.getSimpleName();
 
+    TextView pathSaveVie;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_new);
+        pathSaveVie = findViewById(R.id.tv_path_save);
         findViewById(R.id.tv_old).setOnClickListener(this);
         findViewById(R.id.tv_new).setOnClickListener(this);
         mkDir();
@@ -36,6 +40,7 @@ public class MainActivityNew extends AppCompatActivity implements View.OnClickLi
         if (!dir2.exists())
             dir2.mkdir();
 
+        pathSaveVie.setText(Constant.FILE_SAVE_PATH_DIR);
     }
 
     @Override
@@ -81,6 +86,5 @@ public class MainActivityNew extends AppCompatActivity implements View.OnClickLi
     public boolean hasPermission(String permission) {
         return ActivityCompat.checkSelfPermission(getBaseContext(), permission) == PackageManager.PERMISSION_GRANTED;
     }
-
 
 }

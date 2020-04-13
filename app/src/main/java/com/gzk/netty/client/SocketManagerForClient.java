@@ -1,9 +1,9 @@
 package com.gzk.netty.client;
 
-import android.os.Environment;
 import android.util.Log;
 
 import com.gzk.netty.callback.OnTransferListener;
+import com.gzk.netty.utils.Constant;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -100,8 +100,7 @@ public class SocketManagerForClient {
         int len = 0;
         len = is.read(buf); // 获取文件名
         fileName = new String(buf, 0, len);
-
-        File file = new File(Environment.getExternalStorageDirectory() + File.separator + fileName);
+        File file = new File(Constant.FILE_SAVE_PATH_DIR + File.separator + fileName);
         writeOutInfo(socket, KEY_FILE_LENGTH);
         return file;
     }

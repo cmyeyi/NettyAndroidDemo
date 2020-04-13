@@ -8,11 +8,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.gzk.netty.client.ClientActivity;
 import com.gzk.netty.file.ChoseFileActivity;
-import com.gzk.netty.server.ServerActivity;
 import com.gzk.netty.utils.Constant;
-import com.gzk.netty.utils.IPUtils;
+
+import java.io.File;
 
 public class MainActivityNew extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = MainActivityNew.class.getSimpleName();
@@ -23,6 +22,20 @@ public class MainActivityNew extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_main_new);
         findViewById(R.id.tv_old).setOnClickListener(this);
         findViewById(R.id.tv_new).setOnClickListener(this);
+        mkDir();
+    }
+
+    /**
+     * 创建文件夹
+     */
+    private void mkDir() {
+        File dir = new File(Constant.FILE_SAVE_PATH_ROOT);
+        if (!dir.exists())
+            dir.mkdir();
+        File dir2 = new File(Constant.FILE_SAVE_PATH_DIR);
+        if (!dir2.exists())
+            dir2.mkdir();
+
     }
 
     @Override

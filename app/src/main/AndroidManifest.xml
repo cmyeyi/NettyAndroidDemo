@@ -27,6 +27,7 @@
         <activity android:name=".server.ServerActivity"/>
         <activity android:name=".CaptureActivity"/>
         <activity android:name=".QRCodeActivity"/>
+        <activity android:name=".file.ChoseFileActivity"/>
     </application>
 
 </manifest>

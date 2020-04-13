@@ -1,7 +1,9 @@
 package com.gzk.netty.server;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -29,6 +31,7 @@ import java.util.Date;
 
 public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = ServerActivity.class.getSimpleName();
+    private String filePath;
     private TextView addressView;
     private SocketManagerForServer socketManagerForServer;
     private ImageView qrCodeView;
@@ -83,13 +86,31 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
-
+        getFilePath();
         initProgress();
         qrCodeView = findViewById(R.id.id_qrcode_view);
         addressView = findViewById(R.id.ip_address);
         addressView.setText("ip=" + getSelfIpAddress());
         createQRCode();
         socketManagerForServer = new SocketManagerForServer(onTransferListener);
+    }
+
+    private void getFilePath() {
+        Intent intent = getIntent();
+
+        if (Intent.ACTION_SEND == intent.getAction()) {
+            Bundle bundle = intent.getExtras();
+            Uri uri = (Uri) bundle.get(Intent.EXTRA_STREAM);
+            filePath = uri.getPath();
+            Log.e("#######", "ACTION_SEND，" + uri.getPath() + "  " + intent.getAction());
+        } else if (Intent.ACTION_VIEW == intent.getAction()) {
+            Uri uri = intent.getData();
+            filePath = uri.getPath();
+            Log.e("#######", "ACTION_VIEW，" + uri.getPath() + "  " + intent.getAction());
+        } else {
+            filePath = intent.getStringExtra("path");
+            Log.e("#######", "else filepath：" + filePath);
+        }
     }
 
     private void initProgress() {
@@ -145,7 +166,8 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
 
     private void send(final String remoteIp) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            final File file = new File("/sdcard/gd.zip");
+//            final File file = new File("/sdcard/gd.zip");
+            final File file = new File(filePath);
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());
                 Message.obtain(handler, 0, "正在发送至" + remoteIp + ":" + Constant.PORT).sendToTarget();

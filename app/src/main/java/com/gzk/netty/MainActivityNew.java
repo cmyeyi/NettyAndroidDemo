@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.gzk.netty.client.ClientActivity;
+import com.gzk.netty.file.ChoseFileActivity;
 import com.gzk.netty.server.ServerActivity;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
@@ -37,7 +38,11 @@ public class MainActivityNew extends AppCompatActivity implements View.OnClickLi
     }
 
     private void toOld() {
-        startActivity(new Intent(this, ServerActivity.class));
+        if (checkPermission()) {
+            Intent intent = new Intent(this, ChoseFileActivity.class);
+            startActivityForResult(intent, 1);
+        }
+//        startActivity(new Intent(this, ServerActivity.class));
     }
 
 

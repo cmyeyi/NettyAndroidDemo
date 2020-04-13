@@ -24,6 +24,10 @@ import com.gzk.netty.qrcode.camera.CameraManager;
 import com.gzk.netty.qrcode.decode.DecodeThread;
 import com.gzk.netty.qrcode.utils.CaptureActivityHandler;
 import com.gzk.netty.qrcode.utils.InactivityTimer;
+import com.gzk.netty.utils.Constant;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -172,11 +176,22 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
 
     public void handleQRCode(Result rawResult, Bundle bundle) {
-        Log.i("###", "result: " + rawResult.getText());
-        Intent intent = new Intent(CaptureActivity.this, ClientActivity.class);
-        intent.putExtra("address", rawResult.getText());
-        startActivity(intent);
-        finish();
+        String value = rawResult.getText();
+        Log.i("###", "result: " + value);
+        try {
+            JSONObject msg=new JSONObject(value);
+            String ip = msg.getString(Constant.KEY_IP);
+            int port = msg.getInt(Constant.KEY_PORT);
+            String userName = msg.getString(Constant.KEY_USER);
+            Intent intent = new Intent(CaptureActivity.this, ClientActivity.class);
+            intent.putExtra(Constant.KEY_IP, ip);
+            intent.putExtra(Constant.KEY_PORT, port);
+            intent.putExtra(Constant.KEY_USER, userName);
+            startActivity(intent);
+            finish();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {

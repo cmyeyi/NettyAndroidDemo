@@ -3,6 +3,9 @@ package com.gzk.netty.server;
 import android.os.Handler;
 import android.os.Message;
 import android.system.ErrnoException;
+import android.util.Log;
+
+import com.gzk.netty.ConnectListener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,9 +26,11 @@ public class SocketManagerForServer {
     private Handler handler = null;
     private Thread receiveFileThread;
     private boolean stop = false;
+    private ConnectListener connectListener;
 
-    public SocketManagerForServer(Handler handler){
+    public SocketManagerForServer(Handler handler, ConnectListener callback) {
         this.handler = handler;
+        this.connectListener = callback;
         stop = false;
         try {
             server = new ServerSocket();
@@ -60,9 +65,9 @@ public class SocketManagerForServer {
             InputStreamReader streamReader = new InputStreamReader(nameStream);
             BufferedReader br = new BufferedReader(streamReader);
             String key = br.readLine();
-            sendMessage(0, "收到，客户端请求,key:"+key+"\n");
-            sendMessage(4, name.getInetAddress().getHostAddress());
+            sendMessage(0, "收到，客户端请求,key:" + key + "\n");
 
+            connectListener.onConnectSuccess(name.getInetAddress().getHostAddress());
             br.close();
             streamReader.close();
             nameStream.close();
@@ -89,9 +94,12 @@ public class SocketManagerForServer {
             OutputStream outputData = data.getOutputStream();
             FileInputStream fileInput = new FileInputStream(path);
             int size = -1;
+            int total = 0;
             byte[] buffer = new byte[1024];
-            while((size = fileInput.read(buffer, 0, 1024)) != -1){
+            while ((size = fileInput.read(buffer, 0, 1024)) != -1) {
                 outputData.write(buffer, 0, size);
+                total += size;
+                sendMessage(3, "total:" + total);
             }
             outputData.close();
             fileInput.close();

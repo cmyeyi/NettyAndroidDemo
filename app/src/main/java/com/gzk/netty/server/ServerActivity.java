@@ -12,16 +12,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzk.netty.ConnectListener;
 import com.gzk.netty.R;
 import com.gzk.netty.qrcode.utils.ZXingUtil;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
+public class ServerActivity extends AppCompatActivity implements View.OnClickListener,ConnectListener {
     public final static String TAG = ServerActivity.class.getSimpleName();
     private TextView addressView;
     private TextView progressView;
@@ -56,8 +60,7 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                         progressView.setText("进度：" + msg.obj.toString());
                         break;
                     case 4:
-                        String remoteIP = msg.obj.toString();
-                        send(remoteIP);
+
                         break;
                     case 10:
                         finish();
@@ -65,13 +68,25 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
         };
-        socketManagerForServer = new SocketManagerForServer(handler);
+
         createQRCode();
+        socketManagerForServer = new SocketManagerForServer(handler, this);
     }
 
     private void createQRCode() {
-        Bitmap bitmap = ZXingUtil.createQRCode(getSelfIpAddress(), 150, 150);
-        qrCodeView.setImageBitmap(bitmap);
+        initPort();
+        JSONObject value=new JSONObject();
+        try {
+            value.put(Constant.KEY_IP,getSelfIpAddress());
+            value.put(Constant.KEY_PORT, Constant.PORT);
+            value.put(Constant.KEY_USER,"user123");
+            String data = value.toString();
+            Log.d("######","###data:"+data);
+            Bitmap bitmap = ZXingUtil.createQRCode(data, 150, 150);
+            qrCodeView.setImageBitmap(bitmap);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getSelfIpAddress() {
@@ -87,14 +102,13 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private Thread sendThread;
     private void send(final String remoteIp) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             final File file = new File("/sdcard/gd.zip");
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());
                 Message.obtain(handler, 0, "正在发送至" + remoteIp + ":" + Constant.PORT).sendToTarget();
-                sendThread = new Thread(new Runnable() {
+                Thread sendThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         socketManagerForServer.sendFile(file.getName(), file.getPath(), remoteIp, Constant.PORT);
@@ -110,7 +124,21 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        sendThread.interrupt();
-        sendThread= null;
+    }
+
+    @Override
+    public void onConnectSuccess(String ip) {
+        String remoteIP = ip;
+        send(remoteIP);
+    }
+
+    @Override
+    public void onDisconnect() {
+
+    }
+
+    private int initPort() {
+        Constant.PORT = (int)(Math.random()*9000+1000);
+        return Constant.PORT;
     }
 }

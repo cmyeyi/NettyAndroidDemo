@@ -3,15 +3,16 @@ package com.gzk.netty.client;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+
+import com.gzk.netty.ConnectListener;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,9 +25,11 @@ public class SocketManagerForClient {
     private Handler handler = null;
     private Thread receiveFileThread;
     private boolean stop;
+    private ConnectListener connectListener;
 
-    public SocketManagerForClient(Handler handler) {
+    public SocketManagerForClient(Handler handler, ConnectListener callback) {
         this.handler = handler;
+        this.connectListener = callback;
     }
 
     private void createServerSocket() {
@@ -80,7 +83,7 @@ public class SocketManagerForClient {
             data.close();
             stop = true;
             sendMessage(0, fileName + "接收完成");
-            sendMessage(10, "finish");
+            connectListener.onDisconnect();
         } catch (Exception e) {
             sendMessage(0, "接收错误:\n" + e.getMessage());
         }
@@ -88,25 +91,24 @@ public class SocketManagerForClient {
 
 
     public void connectServer(String ipAddress, int port) {
+        Log.e("#########", "connectServer,ipAddress=" + ipAddress + ",port" + port);
         String content = "requestServer";
         try {
 
             Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(ipAddress, port), 1000);
+            socket.connect(new InetSocketAddress(ipAddress, port), 5000);
 
             OutputStream os = socket.getOutputStream();
-            OutputStreamWriter osw = new OutputStreamWriter(os);
-            BufferedWriter bw = new BufferedWriter(osw);
             os.write(content.getBytes("utf-8"));
-            bw.close();
-            osw.close();
             os.close();
             socket.close();
 
             sendMessage(0, "请求服务... ...");
         } catch (SocketTimeoutException ste) {
-            sendMessage(0, "发送错误:" + ste.getMessage());
+            ste.getMessage();
+            sendMessage(0, "连接超时，"+ ste.getMessage());
         } catch (Exception e) {
+            Log.e("#########",""+e.getMessage());
             sendMessage(0, "发送错误:" + e.getMessage());
         }
         createServerSocket();
@@ -118,7 +120,4 @@ public class SocketManagerForClient {
         }
     }
 
-    private void clean() {
-
-    }
 }

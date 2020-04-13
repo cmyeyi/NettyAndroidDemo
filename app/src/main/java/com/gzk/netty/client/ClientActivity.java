@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzk.netty.ConnectListener;
 import com.gzk.netty.R;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
@@ -16,19 +17,23 @@ import com.gzk.netty.utils.IPUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ClientActivity extends AppCompatActivity implements View.OnClickListener {
+import static com.gzk.netty.utils.Constant.PORT;
+
+public class ClientActivity extends AppCompatActivity implements View.OnClickListener, ConnectListener {
     public final static String TAG = ClientActivity.class.getSimpleName();
-//    public static final String IP = "192.168.31.251";
+    //    public static final String IP = "192.168.31.251";
     private TextView addressView;
     private TextView progressView;
     private SocketManagerForClient socketManagerForClient;
     private Handler handler;
     private String remoteIP;
+    private int port;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getRemoteIp();
+        getExtra();
         setContentView(R.layout.activity_client);
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
@@ -52,18 +57,19 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
                     case 3:
                         addressView.setText("进度：" + msg.obj.toString());
                         break;
-                    case 10:
-                        finish();
-                        break;
                 }
             }
         };
-        socketManagerForClient = new SocketManagerForClient(handler);
+        socketManagerForClient = new SocketManagerForClient(handler, this);
     }
 
-    private void getRemoteIp() {
-        remoteIP = getIntent().getStringExtra("address");
-        Log.d("#####", "接收端，扫码获取connectAddress：" + remoteIP);
+    private void getExtra() {
+        remoteIP = getIntent().getStringExtra(Constant.KEY_IP);
+        Constant.PORT = getIntent().getIntExtra(Constant.KEY_PORT, PORT);
+        userName = getIntent().getStringExtra(Constant.KEY_USER);
+        Log.d("#####", "接收端，扫码结果，remoteIP：" + remoteIP);
+        Log.d("#####", "接收端，扫码结果，port：" + Constant.PORT);
+        Log.d("#####", "接收端，扫码结果，userName：" + userName);
     }
 
     private String getSelfIpAddress() {
@@ -88,12 +94,11 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         connect();
     }
 
-    private Thread serverConnect;
     private void connect() {
-        serverConnect = new Thread(new Runnable() {
+        Thread serverConnect = new Thread(new Runnable() {
             @Override
             public void run() {
-                socketManagerForClient.connectServer(remoteIP, Constant.PORT);
+                socketManagerForClient.connectServer(remoteIP, PORT);
             }
         });
         serverConnect.start();
@@ -102,7 +107,15 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        serverConnect.interrupt();
-        serverConnect = null;
+    }
+
+    @Override
+    public void onConnectSuccess(String ip) {
+
+    }
+
+    @Override
+    public void onDisconnect() {
+        finish();
     }
 }

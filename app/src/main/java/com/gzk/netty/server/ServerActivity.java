@@ -21,6 +21,7 @@ import com.gzk.netty.utils.ZXingUtil;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 import com.gzk.netty.view.NumberProgressBar;
+import com.gzk.netty.view.RotateLoading;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +37,8 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     private SocketManagerForServer socketManagerForServer;
     private ImageView qrCodeView;
     private NumberProgressBar progress;
+    private RotateLoading loading;
+    private View loadingContainer;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -55,9 +58,16 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
+
     OnTransferListener onTransferListener = new OnTransferListener() {
         @Override
         public void onConnectSuccess(String ip) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showLoading();
+                }
+            });
             String remoteIP = ip;
             send(remoteIP, filePath);
         }
@@ -77,7 +87,12 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onError() {
-            Toast.makeText(ServerActivity.this, "数据接收失败", Toast.LENGTH_SHORT).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(ServerActivity.this, "数据发送失败", Toast.LENGTH_SHORT).show();
+                }
+            });
             finish();
         }
     };
@@ -121,12 +136,35 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         progress.setUnreachedBarColor(Color.GRAY);
         progress.setProgressTextSize(40f);
         progress.setMax(100);
+        initLoading();
+    }
+
+    private void initLoading() {
+        loadingContainer = findViewById(R.id.layout_point_container);
+        loading = findViewById(R.id.loading);
+        loading.setLoadingColor(Color.WHITE);
+    }
+
+
+    private void showLoading() {
+        loadingContainer.setVisibility(View.VISIBLE);
+        if(loading != null) {
+            loading.start();
+        }
+    }
+
+    private void hideLoading() {
+        loadingContainer.setVisibility(View.GONE);
+        if(loading != null) {
+            loading.stop();
+        }
     }
 
     public void refreshProcess(final int progressValue) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                hideLoading();
                 if (progress.getVisibility() != View.VISIBLE) {
                     progress.setVisibility(View.VISIBLE);
                 }
@@ -186,6 +224,7 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        hideLoading();
     }
 
     private int initPort() {

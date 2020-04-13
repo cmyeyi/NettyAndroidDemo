@@ -15,6 +15,7 @@ import com.gzk.netty.callback.OnTransferListener;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 import com.gzk.netty.view.NumberProgressBar;
+import com.gzk.netty.view.RotateLoading;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,6 +30,8 @@ public class ClientActivity extends AppCompatActivity {
     private int port;
     private String userName;
     private NumberProgressBar progress;
+    private RotateLoading loading;
+    private View loadingContainer;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -93,12 +96,35 @@ public class ClientActivity extends AppCompatActivity {
         progress.setUnreachedBarColor(Color.GRAY);
         progress.setProgressTextSize(40f);
         progress.setMax(100);
+        initLoading();
+    }
+
+    private void initLoading() {
+        loadingContainer = findViewById(R.id.layout_point_container);
+        loading = findViewById(R.id.loading);
+        loading.setLoadingColor(Color.WHITE);
+    }
+
+
+    private void showLoading() {
+        loadingContainer.setVisibility(View.VISIBLE);
+        if(loading != null) {
+            loading.start();
+        }
+    }
+
+    private void hideLoading() {
+        loadingContainer.setVisibility(View.GONE);
+        if(loading != null) {
+            loading.stop();
+        }
     }
 
     public void refreshProcess(final int progressValue) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                hideLoading();
                 if (progress.getVisibility() != View.VISIBLE) {
                     progress.setVisibility(View.VISIBLE);
                 }
@@ -128,6 +154,7 @@ public class ClientActivity extends AppCompatActivity {
     }
 
     private void connect() {
+        showLoading();
         Thread serverConnect = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -140,5 +167,7 @@ public class ClientActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        hideLoading();
     }
+
 }

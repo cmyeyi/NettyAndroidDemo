@@ -58,7 +58,7 @@ public class SocketManagerForServer {
             Socket socket = server.accept();
             InputStream is = socket.getInputStream();
 
-            onConnectSuccess(socket);
+            onConnectSuccess(socket);//receiver client message first
             is.close();
             socket.close();
         }catch(Exception e){

@@ -59,7 +59,7 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         @Override
         public void onConnectSuccess(String ip) {
             String remoteIP = ip;
-            send(remoteIP);
+            send(remoteIP, filePath);
         }
 
         @Override
@@ -164,9 +164,8 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void send(final String remoteIp) {
+    private void send(final String remoteIp, String filePath) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-//            final File file = new File("/sdcard/gd.zip");
             final File file = new File(filePath);
             if (file.exists()) {
                 Log.d("#####", "name:" + file.getName());

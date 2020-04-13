@@ -7,7 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.gzk.netty.qrcode.utils.ZXingUtil;
+import com.gzk.netty.utils.ZXingUtil;
 
 public class QRCodeActivity extends AppCompatActivity {
     private int QR_WIDTH = 300;

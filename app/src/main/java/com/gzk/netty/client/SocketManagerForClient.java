@@ -1,35 +1,35 @@
 package com.gzk.netty.client;
 
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
-import com.gzk.netty.ConnectListener;
+import com.gzk.netty.callback.OnTransferListener;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import static com.gzk.netty.utils.Constant.KEY_FILE_LENGTH;
+import static com.gzk.netty.utils.Constant.KEY_FILE_SEND;
 import static com.gzk.netty.utils.Constant.PORT;
 
 public class SocketManagerForClient {
     private ServerSocket server;
-    private Handler handler = null;
+    private Socket socket;
     private Thread receiveFileThread;
     private boolean stop;
-    private ConnectListener connectListener;
+    private OnTransferListener onTransferListener;
+    private String fileName;
+    private int length;
 
-    public SocketManagerForClient(Handler handler, ConnectListener callback) {
-        this.handler = handler;
-        this.connectListener = callback;
+    public SocketManagerForClient(OnTransferListener t) {
+        this.onTransferListener = t;
     }
 
     private void createServerSocket() {
@@ -38,7 +38,7 @@ public class SocketManagerForClient {
             server = new ServerSocket();
             server.setReuseAddress(true);
             server.bind(new InetSocketAddress(PORT));
-            sendMessage(1, PORT);
+            Log.w("########", "client create server:" + PORT);
             receiveFileThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -55,40 +55,91 @@ public class SocketManagerForClient {
 
     void receiveFile() {
         try {
-            Socket name = server.accept();
-            InputStream nameStream = name.getInputStream();
-            InputStreamReader streamReader = new InputStreamReader(nameStream);
-            BufferedReader br = new BufferedReader(streamReader);
-            String fileName = br.readLine();
-            br.close();
-            streamReader.close();
-            nameStream.close();
-            name.close();
-            sendMessage(0, "正在接收:" + fileName);
+            socket = server.accept();
+            InputStream is = socket.getInputStream();
 
-            Socket data = server.accept();
-            InputStream dataStream = data.getInputStream();
-            String savePath = Environment.getExternalStorageDirectory().getPath() + "/" + fileName;
-            FileOutputStream file = new FileOutputStream(savePath, false);
-            byte[] buffer = new byte[1024];
-            int size = -1;
-            long total = 0;
-            while ((size = dataStream.read(buffer)) != -1) {
-                file.write(buffer, 0, size);
-                total += size;
-                sendMessage(3, "total:" + total);
-            }
-            file.close();
-            dataStream.close();
-            data.close();
+            File file = getFileName(is);
+            length = getFileLength(is);
+
+            FileOutputStream os = new FileOutputStream(file);
+            copyFile(is, os);
+
+            is.close();
+            os.close();
+            socket.close();
             stop = true;
-            sendMessage(0, fileName + "接收完成");
-            connectListener.onDisconnect();
+            Log.d("########", fileName + "接收完成");
+            onTransferFinished();
+        } catch (IOException e) {
+            onTransferError(e);
         } catch (Exception e) {
-            sendMessage(0, "接收错误:\n" + e.getMessage());
+            onTransferError(e);
         }
     }
 
+    public boolean copyFile(InputStream inputStream, OutputStream out) {
+        byte buf[] = new byte[1024];
+        int len;
+        long total = 0;
+        int progress;
+        try {
+            while ((len = inputStream.read(buf)) != -1) {
+                out.write(buf, 0, len);
+                total += len;
+                progress = (int) (total * 100 / length);
+                onTransferProgress(progress);
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public File getFileName(InputStream is) throws Exception {
+        byte[] buf = new byte[1024];
+        int len = 0;
+        len = is.read(buf); // 获取文件名
+        fileName = new String(buf, 0, len);
+
+        File file = new File(Environment.getExternalStorageDirectory() + File.separator + fileName);
+        writeOutInfo(socket, KEY_FILE_LENGTH);
+        return file;
+    }
+
+    public void writeOutInfo(Socket socket, String infoStr) throws Exception {
+        OutputStream sockOut = socket.getOutputStream();
+        sockOut.write(infoStr.getBytes());
+    }
+
+    public int getFileLength(InputStream is) throws Exception {
+        byte[] buf = new byte[1024];
+        int len = 0;
+        len = is.read(buf); // get file length
+        String length = new String(buf, 0, len);
+        writeOutInfo(socket, KEY_FILE_SEND);
+        return Integer.parseInt(length);
+    }
+
+    private void onTransferProgress(int progress) {
+        Log.i("#####", "文件接收进度: " + progress);
+        if (onTransferListener != null) {
+            onTransferListener.onProgressChanged(progress);
+        }
+    }
+
+    private void onTransferFinished() {
+        Log.i("#####", "onTransferFinished");
+        if (onTransferListener != null) {
+            onTransferListener.onTransferFinished();
+        }
+    }
+
+    private void onTransferError(Exception e) {
+        Log.e("########", "onTransferError" + e.getMessage());
+        if (onTransferListener != null) {
+            onTransferListener.onError();
+        }
+    }
 
     public void connectServer(String ipAddress, int port) {
         Log.e("#########", "connectServer,ipAddress=" + ipAddress + ",port" + port);
@@ -103,21 +154,14 @@ public class SocketManagerForClient {
             os.close();
             socket.close();
 
-            sendMessage(0, "请求服务... ...");
+            Log.d("########", "请求服务... ...");
         } catch (SocketTimeoutException ste) {
             ste.getMessage();
-            sendMessage(0, "连接超时，"+ ste.getMessage());
+            Log.e("########", "连接超时，" + ste.getMessage());
         } catch (Exception e) {
-            Log.e("#########",""+e.getMessage());
-            sendMessage(0, "发送错误:" + e.getMessage());
+            Log.e("########", "client 发送错误，" + e.getMessage());
         }
         createServerSocket();
-    }
-
-    void sendMessage(int what, Object obj) {
-        if (handler != null) {
-            Message.obtain(handler, what, obj).sendToTarget();
-        }
     }
 
 }

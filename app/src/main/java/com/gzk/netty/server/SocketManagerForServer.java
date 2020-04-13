@@ -2,41 +2,41 @@ package com.gzk.netty.server;
 
 import android.os.Handler;
 import android.os.Message;
-import android.system.ErrnoException;
 import android.util.Log;
 
-import com.gzk.netty.ConnectListener;
+import com.gzk.netty.callback.OnTransferListener;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.gzk.netty.utils.Constant.KEY_FILE_LENGTH;
+import static com.gzk.netty.utils.Constant.KEY_FILE_SEND;
 import static com.gzk.netty.utils.Constant.PORT;
 
 public class SocketManagerForServer {
     private ServerSocket server;
-    private Handler handler = null;
+    private Socket socket;
     private Thread receiveFileThread;
     private boolean stop = false;
-    private ConnectListener connectListener;
+    private OnTransferListener onTransferListener;
+    private long length;
+    private String fileName;
 
-    public SocketManagerForServer(Handler handler, ConnectListener callback) {
-        this.handler = handler;
-        this.connectListener = callback;
+    public SocketManagerForServer(OnTransferListener callback) {
+        this.onTransferListener = callback;
         stop = false;
         try {
             server = new ServerSocket();
             server.setReuseAddress(true);
             server.bind(new InetSocketAddress(PORT));
-            sendMessage(1, PORT);
             receiveFileThread = new Thread(new Runnable(){
                 @Override
                 public void run() {
@@ -51,64 +51,106 @@ public class SocketManagerForServer {
         }
 
     }
-    void sendMessage(int what, Object obj){
-        if (handler != null){
-            Message.obtain(handler, what, obj).sendToTarget();
-        }
-    }
 
     void waitForClientRequest(){
         try{
 
-            Socket name = server.accept();
-            InputStream nameStream = name.getInputStream();
-            InputStreamReader streamReader = new InputStreamReader(nameStream);
-            BufferedReader br = new BufferedReader(streamReader);
-            String key = br.readLine();
-            sendMessage(0, "收到，客户端请求,key:" + key + "\n");
+            Socket socket = server.accept();
+            InputStream is = socket.getInputStream();
+//            InputStreamReader sr = new InputStreamReader(is);
+//            BufferedReader br = new BufferedReader(sr);
+//            String key = br.readLine();
+//            sendMessage(0, "收到，客户端请求,key:" + key + "\n");
 
-            connectListener.onConnectSuccess(name.getInetAddress().getHostAddress());
-            br.close();
-            streamReader.close();
-            nameStream.close();
-            name.close();
+            onConnectSuccess(socket);
+//            br.close();
+//            sr.close();
+            is.close();
+            socket.close();
         }catch(Exception e){
-            sendMessage(0, "接收错误:\n" + e.getMessage());
+            onTransferError(e);
         }
     }
 
-    public void sendFile(String fileName, String path, String ipAddress, int port){
-        try {
-            Socket name = new Socket(ipAddress, port);
-            OutputStream outputName = name.getOutputStream();
-            OutputStreamWriter outputWriter = new OutputStreamWriter(outputName);
-            BufferedWriter bwName = new BufferedWriter(outputWriter);
-            bwName.write(fileName);
-            bwName.close();
-            outputWriter.close();
-            outputName.close();
-            name.close();
-            sendMessage(0, "正在发送" + fileName);
+    public String serverInfoBack(InputStream is) throws Exception {
+        byte[] bufIs = new byte[1024];
+        int lenIn = is.read(bufIs);
+        String info = new String(bufIs, 0, lenIn);
+        return info;
+    }
 
-            Socket data = new Socket(ipAddress, port);
-            OutputStream outputData = data.getOutputStream();
-            FileInputStream fileInput = new FileInputStream(path);
-            int size = -1;
-            int total = 0;
-            byte[] buffer = new byte[1024];
-            while ((size = fileInput.read(buffer, 0, 1024)) != -1) {
-                outputData.write(buffer, 0, size);
-                total += size;
-                sendMessage(3, "total:" + total);
+    public boolean copyFile(InputStream inputStream, OutputStream out) {
+        byte buf[] = new byte[1024];
+        int len;
+        long sendLength = 0;
+        try {
+            while ((len = inputStream.read(buf)) != -1) {
+                out.write(buf, 0, len);
+                sendLength += len;
+                onTransferProgress((int) (sendLength * 100 / length));
             }
-            outputData.close();
-            fileInput.close();
-            data.close();
-            sendMessage(0, fileName + "发送完毕");
-            sendMessage(10, "finish");
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public void sendFile(File file, String ipAddress, int port){
+        try {
+            socket = new Socket(ipAddress, port);
+            OutputStream os = socket.getOutputStream();
+            InputStream is = socket.getInputStream();
+            fileName = file.getName();
+            os.write(fileName.getBytes());
+            String serverInfo = serverInfoBack(is);
+            if (serverInfo.equals(KEY_FILE_LENGTH)) {
+                length = file.length();
+                os.write(("" + length).getBytes());
+            }
+
+            String serverInfo2 = serverInfoBack(is);
+            if (serverInfo2.equals(KEY_FILE_SEND)) {
+                FileInputStream inputStream = new FileInputStream(file);
+                copyFile(inputStream, os);
+                inputStream.close();
+            }
+
+            is.close();
+            os.close();
+            socket.close();
+
+            onTransferFinished();
             stop = true;
         } catch (Exception e) {
-            sendMessage(0, "发送错误:\n" + e.getMessage());
+            onTransferError(e);
+        }
+    }
+
+    private void onConnectSuccess(Socket socket) {
+        Log.d("######","#server connect success#");
+        if(onTransferListener != null) {
+            onTransferListener.onConnectSuccess(socket.getInetAddress().getHostAddress());
+        }
+    }
+
+    private void onTransferProgress(int progress) {
+        Log.i("#####", "文件接收进度: " + progress);
+        if (onTransferListener != null) {
+            onTransferListener.onProgressChanged(progress);
+        }
+    }
+
+    private void onTransferFinished() {
+        Log.i("#####", "onTransferFinished");
+        if (onTransferListener != null) {
+            onTransferListener.onTransferFinished();
+        }
+    }
+
+    private void onTransferError(Exception e) {
+        Log.e("########", "onTransferError" + e.getMessage());
+        if (onTransferListener != null) {
+            onTransferListener.onError();
         }
     }
 }

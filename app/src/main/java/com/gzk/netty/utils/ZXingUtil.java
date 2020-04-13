@@ -1,4 +1,4 @@
-package com.gzk.netty.qrcode.utils;
+package com.gzk.netty.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;

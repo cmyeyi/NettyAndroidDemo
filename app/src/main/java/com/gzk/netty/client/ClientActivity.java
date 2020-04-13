@@ -21,11 +21,9 @@ import java.util.Date;
 
 import static com.gzk.netty.utils.Constant.PORT;
 
-public class ClientActivity extends AppCompatActivity implements View.OnClickListener {
+public class ClientActivity extends AppCompatActivity {
     public final static String TAG = ClientActivity.class.getSimpleName();
-    //    public static final String IP = "192.168.31.251";
     private TextView addressView;
-    private TextView progressView;
     private SocketManagerForClient socketManagerForClient;
     private String remoteIP;
     private int port;
@@ -82,18 +80,16 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
         getExtra();
         setContentView(R.layout.activity_client);
         initProgress();
-        findViewById(R.id.tv_send).setOnClickListener(this);
-        findViewById(R.id.tv_connect).setOnClickListener(this);
-        progressView = findViewById(R.id.ip_progress);
         addressView = findViewById(R.id.ip_address);
         addressView.setText("ip=" + getSelfIpAddress());
         socketManagerForClient = new SocketManagerForClient(onTransferListener);
     }
 
     private void initProgress() {
+        int color = Color.BLUE;
         progress = findViewById(R.id.progress);
-        progress.setProgressTextColor(Color.WHITE);
-        progress.setReachedBarColor(Color.WHITE);
+        progress.setProgressTextColor(color);
+        progress.setReachedBarColor(color);
         progress.setUnreachedBarColor(Color.GRAY);
         progress.setProgressTextSize(40f);
         progress.setMax(100);
@@ -123,17 +119,6 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
     private String getSelfIpAddress() {
         IPUtils iPInfo = new IPUtils(this);
         return iPInfo.getWIFILocalIpAddress();
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.tv_connect:
-                connect();
-                break;
-            default:
-                break;
-        }
     }
 
     @Override

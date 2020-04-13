@@ -1,48 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorAccent"
     android:orientation="vertical">
 
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@color/colorAccent">
-
-        <ImageView
-            android:id="@+id/id_qrcode_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:minHeight="150dp"
-            android:minWidth="150dp"/>
-
-        <com.gzk.netty.view.NumberProgressBar
-            android:id="@+id/progress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:visibility="gone" />
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/ip_progress"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/colorAccent"
-        android:padding="12dp"
-        android:scrollbars="vertical" />
+    <ImageView
+        android:id="@+id/id_qrcode_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:minHeight="150dp"
+        android:minWidth="150dp"
+        android:layout_marginTop="30dp"/>
 
     <TextView
         android:id="@+id/ip_address"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorAccent"
+        android:layout_height="200dp"
+        android:layout_alignParentBottom="true"
         android:padding="12dp" />
 
-
-</LinearLayout>
+    <com.gzk.netty.view.NumberProgressBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+</RelativeLayout>

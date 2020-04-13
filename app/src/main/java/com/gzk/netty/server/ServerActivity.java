@@ -30,7 +30,6 @@ import java.util.Date;
 public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = ServerActivity.class.getSimpleName();
     private TextView addressView;
-    private TextView progressView;
     private SocketManagerForServer socketManagerForServer;
     private ImageView qrCodeView;
     private NumberProgressBar progress;
@@ -48,9 +47,6 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                     break;
                 case 2:
                     Toast.makeText(getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
-                    break;
-                case 3:
-                    progressView.setText("进度：" + msg.obj.toString());
                     break;
             }
         }
@@ -90,7 +86,6 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
 
         initProgress();
         qrCodeView = findViewById(R.id.id_qrcode_view);
-        progressView = findViewById(R.id.ip_progress);
         addressView = findViewById(R.id.ip_address);
         addressView.setText("ip=" + getSelfIpAddress());
         createQRCode();
@@ -98,9 +93,10 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void initProgress() {
+        int color = Color.BLUE;
         progress = findViewById(R.id.progress);
-        progress.setProgressTextColor(Color.WHITE);
-        progress.setReachedBarColor(Color.WHITE);
+        progress.setProgressTextColor(color);
+        progress.setReachedBarColor(color);
         progress.setUnreachedBarColor(Color.GRAY);
         progress.setProgressTextSize(40f);
         progress.setMax(100);

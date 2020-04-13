@@ -57,14 +57,8 @@ public class SocketManagerForServer {
 
             Socket socket = server.accept();
             InputStream is = socket.getInputStream();
-//            InputStreamReader sr = new InputStreamReader(is);
-//            BufferedReader br = new BufferedReader(sr);
-//            String key = br.readLine();
-//            sendMessage(0, "收到，客户端请求,key:" + key + "\n");
 
             onConnectSuccess(socket);
-//            br.close();
-//            sr.close();
             is.close();
             socket.close();
         }catch(Exception e){

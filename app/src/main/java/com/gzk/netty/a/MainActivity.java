@@ -1,4 +1,4 @@
-package com.gzk.netty;
+package com.gzk.netty.a;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gzk.netty.R;
 import com.gzk.netty.utils.Constant;
 import com.gzk.netty.utils.IPUtils;
 

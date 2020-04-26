@@ -11,4 +11,5 @@ public class Constant {
     public static String KEY_FILE_LENGTH = "FileLength";
     public static String FILE_SAVE_PATH_ROOT = Environment.getExternalStorageDirectory() + "/A";
     public static String FILE_SAVE_PATH_DIR = FILE_SAVE_PATH_ROOT+"/files";
+    public final static String START_SEND = "startSend";
 }

@@ -17,4 +17,5 @@
     <color name="manage_file_header">#37b9fc</color>
     <color name="button_normal">#ff5816</color>
     <color name="button_pressed">#FF4081</color>
+    <color name="color_backup_progress">#4378F2</color>
 </resources>

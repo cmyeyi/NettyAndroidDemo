@@ -5,6 +5,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gzk.netty.callback.OnTransferListener;
+import com.gzk.netty.utils.Constant;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,6 +25,7 @@ import static com.gzk.netty.utils.Constant.PORT;
 public class SocketManagerForServer {
     private ServerSocket server;
     private Socket socket;
+    InputStream is;
     private Thread receiveFileThread;
     private boolean stop = false;
     private OnTransferListener onTransferListener;
@@ -55,16 +57,42 @@ public class SocketManagerForServer {
     void waitForClientRequest(){
         try{
 
-            Socket socket = server.accept();
-            InputStream is = socket.getInputStream();
-
+            socket = server.accept();
+            is = socket.getInputStream();
             onConnectSuccess(socket);//receiver client message first
-            is.close();
-            socket.close();
         }catch(Exception e){
             onTransferError(e);
         }
     }
+
+
+    public void sendFile(File file, String ipAddress, int port){
+        try {
+            OutputStream os = socket.getOutputStream();
+            fileName = file.getName();
+            os.write(fileName.getBytes());
+            String serverInfo = serverInfoBack(is);
+            if (serverInfo.equals(KEY_FILE_LENGTH)) {
+                length = file.length();
+                os.write(("" + length).getBytes());
+            }
+
+            String serverInfo2 = serverInfoBack(is);
+            if (serverInfo2.equals(KEY_FILE_SEND)) {
+                FileInputStream inputStream = new FileInputStream(file);
+                copyFile(inputStream, os);
+                inputStream.close();
+            }
+
+            is.close();
+            os.close();
+            onTransferFinished();
+            clean();
+        } catch (Exception e) {
+            onTransferError(e);
+        }
+    }
+
 
     public String serverInfoBack(InputStream is) throws Exception {
         byte[] bufIs = new byte[1024];
@@ -89,36 +117,6 @@ public class SocketManagerForServer {
         return true;
     }
 
-    public void sendFile(File file, String ipAddress, int port){
-        try {
-            socket = new Socket(ipAddress, port);
-            OutputStream os = socket.getOutputStream();
-            InputStream is = socket.getInputStream();
-            fileName = file.getName();
-            os.write(fileName.getBytes());
-            String serverInfo = serverInfoBack(is);
-            if (serverInfo.equals(KEY_FILE_LENGTH)) {
-                length = file.length();
-                os.write(("" + length).getBytes());
-            }
-
-            String serverInfo2 = serverInfoBack(is);
-            if (serverInfo2.equals(KEY_FILE_SEND)) {
-                FileInputStream inputStream = new FileInputStream(file);
-                copyFile(inputStream, os);
-                inputStream.close();
-            }
-
-            is.close();
-            os.close();
-            socket.close();
-
-            onTransferFinished();
-            stop = true;
-        } catch (Exception e) {
-            onTransferError(e);
-        }
-    }
 
     private void onConnectSuccess(Socket socket) {
         Log.d("######","#server connect success#");
@@ -145,6 +143,26 @@ public class SocketManagerForServer {
         Log.e("########", "onTransferError" + e.getMessage());
         if (onTransferListener != null) {
             onTransferListener.onError();
+        }
+    }
+
+    public void clean() {
+        stop = true;
+        if(socket != null) {
+            try {
+                socket.close();
+                socket = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(server != null) {
+            try {
+                server.close();
+                server = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

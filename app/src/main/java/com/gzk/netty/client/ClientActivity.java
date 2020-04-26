@@ -72,7 +72,7 @@ public class ClientActivity extends AppCompatActivity {
 
         @Override
         public void onError() {
-            Toast.makeText(ClientActivity.this, "数据接收失败", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(ClientActivity.this, "数据接收失败", Toast.LENGTH_SHORT).show();
             finish();
         }
     };
@@ -89,7 +89,7 @@ public class ClientActivity extends AppCompatActivity {
     }
 
     private void initProgress() {
-        int color = Color.BLUE;
+        int color = getResources().getColor(R.color.color_backup_progress);
         progress = findViewById(R.id.progress);
         progress.setProgressTextColor(color);
         progress.setReachedBarColor(color);

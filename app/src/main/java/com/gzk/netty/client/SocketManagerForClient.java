@@ -32,32 +32,49 @@ public class SocketManagerForClient {
         this.onTransferListener = t;
     }
 
+
+    public void connectServer(String ipAddress, int port) {
+        Log.e("#########", "connectServer,ipAddress=" + ipAddress + ",port" + port);
+        String content = Constant.START_SEND;
+        try {
+
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(ipAddress, port), 5000);
+
+//            OutputStream os = socket.getOutputStream();
+//            os.write(content.getBytes("utf-8"));
+//            os.flush();
+//            socket.shutdownOutput();
+//            os.close();
+//            socket.close();
+
+            Log.d("########", "请求服务... ...");
+        } catch (SocketTimeoutException ste) {
+            ste.getMessage();
+            Log.e("########", "连接超时，" + ste.getMessage());
+        } catch (Exception e) {
+            Log.e("########", "client 发送错误，" + e.getMessage());
+        }
+        createServerSocket();
+    }
+
+
     private void createServerSocket() {
         stop = false;
-        try {
-            server = new ServerSocket();
-            server.setReuseAddress(true);
-            server.bind(new InetSocketAddress(PORT));
-            Log.w("########", "client create server:" + PORT);
-            receiveFileThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (!stop) {
-                        receiveFile();
-                    }
+        receiveFileThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!stop) {
+                    receiveFile();
                 }
-            });
-            receiveFileThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+        });
+        receiveFileThread.start();
     }
 
     void receiveFile() {
         try {
-            socket = server.accept();
             InputStream is = socket.getInputStream();
-
             File file = getFileName(is);
             length = getFileLength(is);
 
@@ -140,27 +157,5 @@ public class SocketManagerForClient {
         }
     }
 
-    public void connectServer(String ipAddress, int port) {
-        Log.e("#########", "connectServer,ipAddress=" + ipAddress + ",port" + port);
-        String content = "requestServer";
-        try {
-
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(ipAddress, port), 5000);
-
-            OutputStream os = socket.getOutputStream();
-            os.write(content.getBytes("utf-8"));
-            os.close();
-            socket.close();
-
-            Log.d("########", "请求服务... ...");
-        } catch (SocketTimeoutException ste) {
-            ste.getMessage();
-            Log.e("########", "连接超时，" + ste.getMessage());
-        } catch (Exception e) {
-            Log.e("########", "client 发送错误，" + e.getMessage());
-        }
-        createServerSocket();
-    }
 
 }
